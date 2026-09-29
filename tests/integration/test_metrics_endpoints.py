@@ -2,48 +2,14 @@
 
 from datetime import UTC, datetime
 from decimal import Decimal
-from unittest.mock import AsyncMock, MagicMock, patch
+from unittest.mock import AsyncMock, patch
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
-from app.api.v1.metrics import router as metrics_router
-from app.dependencies import get_db
 from app.schemas.metrics import (
     MetricsSummary,
     ModelMetrics,
     RequestListItem,
     RequestListResponse,
 )
-
-# ---------------------------------------------------------------------------
-# Shared test app
-# ---------------------------------------------------------------------------
-
-_test_app = FastAPI()
-_test_app.include_router(metrics_router, prefix="/v1")
-
-
-def _make_session() -> MagicMock:
-    """Return a minimal mock AsyncSession — services are patched at the module level."""
-    session = MagicMock()
-    return session
-
-
-def _make_client(session: MagicMock | None = None) -> TestClient:
-    if session is None:
-        session = _make_session()
-
-    async def override_get_db():
-        yield session
-
-    _test_app.dependency_overrides[get_db] = override_get_db
-    return TestClient(_test_app)
-
-
-def _cleanup():
-    _test_app.dependency_overrides.clear()
-
 
 # ---------------------------------------------------------------------------
 # Canned fixtures
@@ -100,17 +66,14 @@ _SUMMARY = MetricsSummary(
 
 
 class TestListRequestsEndpoint:
-    def test_returns_200_with_pagination_shape(self):
+    def test_returns_200_with_pagination_shape(self, mock_session, client_factory):
         """Basic call returns 200 and a valid RequestListResponse."""
-        client = _make_client()
-        try:
-            with patch(
-                "app.api.v1.metrics.metrics_service.list_requests",
-                new=AsyncMock(return_value=(1, [])),
-            ):
-                resp = client.get("/v1/requests")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.list_requests",
+            new=AsyncMock(return_value=(1, [])),
+        ):
+            resp = client.get("/v1/requests")
 
         assert resp.status_code == 200
         body = resp.json()
@@ -122,8 +85,9 @@ class TestListRequestsEndpoint:
         assert body["limit"] == 50
         assert body["offset"] == 0
 
-    def test_returns_items_when_rows_present(self):
+    def test_returns_items_when_rows_present(self, mock_session, client_factory):
         """Service returning one row yields one serialised item."""
+        from unittest.mock import MagicMock
 
         from app.models.request import Request
 
@@ -138,15 +102,12 @@ class TestListRequestsEndpoint:
         row.status = "success"
         row.created_at = _NOW
 
-        client = _make_client()
-        try:
-            with patch(
-                "app.api.v1.metrics.metrics_service.list_requests",
-                new=AsyncMock(return_value=(1, [row])),
-            ):
-                resp = client.get("/v1/requests")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.list_requests",
+            new=AsyncMock(return_value=(1, [row])),
+        ):
+            resp = client.get("/v1/requests")
 
         assert resp.status_code == 200
         items = resp.json()["items"]
@@ -154,46 +115,41 @@ class TestListRequestsEndpoint:
         assert items[0]["request_id"] == "req-abc-123"
         assert items[0]["model_name"] == "gemini-3.5-flash-lite"
 
-    def test_limit_and_offset_passed_to_service(self):
+    def test_limit_and_offset_passed_to_service(self, mock_session, client_factory):
         """Query params limit and offset are forwarded to list_requests."""
         mock_fn = AsyncMock(return_value=(0, []))
-        client = _make_client()
-        try:
-            with patch("app.api.v1.metrics.metrics_service.list_requests", new=mock_fn):
-                client.get("/v1/requests?limit=10&offset=5")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.list_requests", new=mock_fn
+        ):
+            client.get("/v1/requests?limit=10&offset=5")
 
         mock_fn.assert_awaited_once()
         _, kwargs = mock_fn.call_args
         assert kwargs["limit"] == 10
         assert kwargs["offset"] == 5
 
-    def test_model_filter_passed_to_service(self):
+    def test_model_filter_passed_to_service(self, mock_session, client_factory):
         """?model= query param is forwarded as model_name to list_requests."""
         mock_fn = AsyncMock(return_value=(0, []))
-        client = _make_client()
-        try:
-            with patch("app.api.v1.metrics.metrics_service.list_requests", new=mock_fn):
-                client.get("/v1/requests?model=gemini-3.5-flash")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.list_requests", new=mock_fn
+        ):
+            client.get("/v1/requests?model=gemini-3.5-flash")
 
         mock_fn.assert_awaited_once()
         _, kwargs = mock_fn.call_args
         assert kwargs["model_name"] == "gemini-3.5-flash"
 
-    def test_limit_above_200_returns_422(self):
+    def test_limit_above_200_returns_422(self, mock_session, client_factory):
         """limit > 200 is rejected by FastAPI query validation."""
-        client = _make_client()
-        try:
-            with patch(
-                "app.api.v1.metrics.metrics_service.list_requests",
-                new=AsyncMock(return_value=(0, [])),
-            ):
-                resp = client.get("/v1/requests?limit=999")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.list_requests",
+            new=AsyncMock(return_value=(0, [])),
+        ):
+            resp = client.get("/v1/requests?limit=999")
 
         assert resp.status_code == 422
 
@@ -204,17 +160,14 @@ class TestListRequestsEndpoint:
 
 
 class TestMetricsSummaryEndpoint:
-    def test_returns_200_with_all_fields(self):
+    def test_returns_200_with_all_fields(self, mock_session, client_factory):
         """Summary endpoint returns 200 and a fully-populated MetricsSummary."""
-        client = _make_client()
-        try:
-            with patch(
-                "app.api.v1.metrics.metrics_service.metrics_summary",
-                new=AsyncMock(return_value=_SUMMARY),
-            ):
-                resp = client.get("/v1/metrics/summary?window=24h")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.metrics_summary",
+            new=AsyncMock(return_value=_SUMMARY),
+        ):
+            resp = client.get("/v1/metrics/summary?window=24h")
 
         assert resp.status_code == 200
         body = resp.json()
@@ -225,43 +178,38 @@ class TestMetricsSummaryEndpoint:
         assert body["by_model"][0]["model_name"] == "gemini-3.5-flash-lite"
         assert body["by_model"][0]["avg_quality_score"] is None
 
-    def test_window_7d_passes_correct_hours(self):
+    def test_window_7d_passes_correct_hours(self, mock_session, client_factory):
         """?window=7d passes window_hours=168 to the service."""
         mock_fn = AsyncMock(return_value=_SUMMARY)
-        client = _make_client()
-        try:
-            with patch("app.api.v1.metrics.metrics_service.metrics_summary", new=mock_fn):
-                client.get("/v1/metrics/summary?window=7d")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.metrics_summary", new=mock_fn
+        ):
+            client.get("/v1/metrics/summary?window=7d")
 
         mock_fn.assert_awaited_once()
         _, kwargs = mock_fn.call_args
         assert kwargs["window_hours"] == 168
 
-    def test_invalid_window_returns_422(self):
+    def test_invalid_window_returns_422(self, mock_session, client_factory):
         """?window=invalid is rejected by FastAPI pattern validation."""
-        client = _make_client()
-        try:
-            with patch(
-                "app.api.v1.metrics.metrics_service.metrics_summary",
-                new=AsyncMock(return_value=_SUMMARY),
-            ):
-                resp = client.get("/v1/metrics/summary?window=invalid")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.metrics_summary",
+            new=AsyncMock(return_value=_SUMMARY),
+        ):
+            resp = client.get("/v1/metrics/summary?window=invalid")
 
         assert resp.status_code == 422
 
-    def test_default_window_is_24h(self):
+    def test_default_window_is_24h(self, mock_session, client_factory):
         """Omitting ?window= uses the 24h default."""
         mock_fn = AsyncMock(return_value=_SUMMARY)
-        client = _make_client()
-        try:
-            with patch("app.api.v1.metrics.metrics_service.metrics_summary", new=mock_fn):
-                client.get("/v1/metrics/summary")
-        finally:
-            _cleanup()
+        session = mock_session()
+        with client_factory(session) as client, patch(
+            "app.api.v1.metrics.metrics_service.metrics_summary", new=mock_fn
+        ):
+            client.get("/v1/metrics/summary")
 
         mock_fn.assert_awaited_once()
         _, kwargs = mock_fn.call_args

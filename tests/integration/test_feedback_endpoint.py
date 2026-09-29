@@ -5,15 +5,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
 
-from fastapi import FastAPI
-from fastapi.testclient import TestClient
-
-from app.api.v1.feedback import router as feedback_router
-from app.dependencies import get_db
 from app.models.request import Request
-
-_test_app = FastAPI()
-_test_app.include_router(feedback_router, prefix="/v1")
 
 _VALID_REQUEST_ID = "a1b2c3d4-e5f6-4890-abcd-ef1234567890"
 
@@ -49,7 +41,7 @@ def _make_found_session(request_id: str = _VALID_REQUEST_ID) -> MagicMock:
 
     qs_row = _make_quality_score_row(request_id)
 
-    async def fake_refresh(obj):
+    async def fake_refresh(obj: MagicMock) -> None:
         obj.id = qs_row.id
         obj.created_at = qs_row.created_at
 
@@ -67,31 +59,15 @@ def _make_missing_session() -> MagicMock:
     return session
 
 
-def _make_client(session: MagicMock) -> TestClient:
-    async def override_get_db():
-        yield session
-
-    _test_app.dependency_overrides[get_db] = override_get_db
-    return TestClient(_test_app)
-
-
-def _cleanup():
-    _test_app.dependency_overrides.clear()
-
-
 class TestFeedbackEndpoint:
-    def test_valid_request_id_returns_201(self):
+    def test_valid_request_id_returns_201(self, client_factory):
         """Valid feedback for an existing request_id → 201 with full response."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "4.50", "source": "human"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 201
         body = resp.json()
@@ -101,107 +77,79 @@ class TestFeedbackEndpoint:
         assert "score" in body
         assert "created_at" in body
 
-    def test_score_above_5_returns_422(self):
+    def test_score_above_5_returns_422(self, client_factory):
         """Score > 5 → 422 Unprocessable Entity (Pydantic validation)."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "5.01"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 422
 
-    def test_score_below_0_returns_422(self):
+    def test_score_below_0_returns_422(self, client_factory):
         """Score < 0 → 422 Unprocessable Entity (Pydantic validation)."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "-0.01"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 422
 
-    def test_unknown_request_id_returns_404(self):
+    def test_unknown_request_id_returns_404(self, client_factory):
         """request_id not in DB → 404 Not Found."""
         session = _make_missing_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": "00000000-0000-0000-0000-000000000000", "score": "3.00"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 404
         assert resp.json()["detail"] == "request_id not found"
 
-    def test_missing_request_id_field_returns_422(self):
+    def test_missing_request_id_field_returns_422(self, client_factory):
         """Missing request_id field → 422 Unprocessable Entity."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post("/v1/feedback", json={"score": "3.00"})
-        finally:
-            _cleanup()
 
         assert resp.status_code == 422
 
-    def test_source_human_is_accepted(self):
+    def test_source_human_is_accepted(self, client_factory):
         """source='human' is a valid literal value → 201."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "3.00", "source": "human"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 201
         assert resp.json()["source"] == "human"
 
-    def test_invalid_source_returns_422(self):
+    def test_invalid_source_returns_422(self, client_factory):
         """source not in Literal set → 422."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "3.00", "source": "robot"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 422
 
-    def test_notes_field_is_optional(self):
+    def test_notes_field_is_optional(self, client_factory):
         """notes omitted → 201, notes is null in response."""
         session = _make_found_session()
-        client = _make_client(session)
-
-        try:
+        with client_factory(session) as client:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "2.00"},
             )
-        finally:
-            _cleanup()
 
         assert resp.status_code == 201
         assert resp.json()["notes"] is None
