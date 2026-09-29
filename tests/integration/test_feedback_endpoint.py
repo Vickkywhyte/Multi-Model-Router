@@ -15,7 +15,7 @@ from app.models.request import Request
 _test_app = FastAPI()
 _test_app.include_router(feedback_router, prefix="/v1")
 
-_VALID_REQUEST_ID = "req-abc-123"
+_VALID_REQUEST_ID = "a1b2c3d4-e5f6-4890-abcd-ef1234567890"
 
 
 def _make_mock_request_row(request_id: str = _VALID_REQUEST_ID) -> Request:
@@ -139,13 +139,13 @@ class TestFeedbackEndpoint:
         try:
             resp = client.post(
                 "/v1/feedback",
-                json={"request_id": "ghost-id-999", "score": "3.00"},
+                json={"request_id": "00000000-0000-0000-0000-000000000000", "score": "3.00"},
             )
         finally:
             _cleanup()
 
         assert resp.status_code == 404
-        assert "ghost-id-999" in resp.json()["detail"]
+        assert resp.json()["detail"] == "request_id not found"
 
     def test_missing_request_id_field_returns_422(self):
         """Missing request_id field → 422 Unprocessable Entity."""

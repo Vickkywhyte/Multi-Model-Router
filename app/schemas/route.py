@@ -9,10 +9,14 @@ from pydantic import BaseModel, Field
 class RouteRequest(BaseModel):
     """Incoming prompt to be classified and routed."""
 
-    prompt: str = Field(..., description="The prompt text to send to the LLM.")
-    max_tokens: int = Field(1024, description="Maximum tokens to generate.")
+    prompt: str = Field(
+        ..., max_length=32768, description="The prompt text to send to the LLM."
+    )
+    max_tokens: int = Field(
+        1024, ge=1, le=8192, description="Maximum tokens to generate."
+    )
     temperature: float = Field(
-        0.0, description="Sampling temperature (0 = deterministic)."
+        0.0, ge=0.0, le=2.0, description="Sampling temperature (0 = deterministic)."
     )
 
 

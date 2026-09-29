@@ -38,10 +38,7 @@ async def submit_feedback(
     existing = result.scalar_one_or_none()
     if existing is None:
         logger.warning("feedback_not_found", extra={"request_id": body.request_id})
-        raise HTTPException(
-            status_code=404,
-            detail=f"request_id '{body.request_id}' not found",
-        )
+        raise HTTPException(status_code=404, detail="request_id not found")
 
     qs = QualityScore(
         request_id=body.request_id,
