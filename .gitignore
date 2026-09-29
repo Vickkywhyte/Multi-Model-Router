@@ -40,6 +40,9 @@ dist/
 build/
 *.egg-info/
 
+# Docker override (local dev ports — never commit)
+docker-compose.override.yml
+
 # Editor / shell / backup artifacts
 *.bak
 *.broken
