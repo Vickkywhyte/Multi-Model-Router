@@ -23,7 +23,9 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     api_v1_prefix: str = "/v1"
 
-    gemini_api_key: str
+    # Real deployments must set GEMINI_API_KEY in .env; tests mock the provider
+    # so this value is never forwarded to the Gemini API in CI.
+    gemini_api_key: str = "test-placeholder-key-not-used"
 
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/router"
     redis_url: str = "redis://localhost:6379/0"
