@@ -3,6 +3,7 @@
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.windows import WINDOW_HOURS
 from app.dependencies import get_db
 from app.observability.logger import get_logger
 from app.schemas.metrics import MetricsSummary, RequestListItem, RequestListResponse
@@ -11,13 +12,6 @@ from app.services import metrics_service
 logger = get_logger("app.api.metrics")
 
 router = APIRouter()
-
-_WINDOW_HOURS: dict[str, int] = {
-    "1h": 1,
-    "24h": 24,
-    "7d": 168,
-    "30d": 720,
-}
 
 
 @router.get("/requests", response_model=RequestListResponse)
@@ -84,7 +78,7 @@ async def metrics_summary_endpoint(
     """
     logger.info("metrics_summary", extra={"window": window})
 
-    window_hours = _WINDOW_HOURS[window]
+    window_hours = WINDOW_HOURS[window]
     return await metrics_service.metrics_summary(
         session=session, window_hours=window_hours
     )

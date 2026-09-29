@@ -10,19 +10,13 @@ from decimal import Decimal
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.windows import hours_to_label
 from app.models.quality import QualityScore
 from app.models.request import Request
 from app.observability.logger import get_logger
 from app.schemas.metrics import MetricsSummary, ModelMetrics
 
 logger = get_logger("app.services.metrics")
-
-_WINDOW_MAP: dict[str, int] = {
-    "1h": 1,
-    "24h": 24,
-    "7d": 168,
-    "30d": 720,
-}
 
 
 async def list_requests(
@@ -83,7 +77,7 @@ async def metrics_summary(
         MetricsSummary populated from SQL aggregations.
     """
     since = datetime.now(tz=UTC) - timedelta(hours=window_hours)
-    window_label = _hours_to_label(window_hours)
+    window_label = hours_to_label(window_hours)
 
     # --- Overall aggregates ---
     overall_q = select(
@@ -141,6 +135,9 @@ async def metrics_summary(
             if row.avg_quality_score is not None
             else None
         )
+        # percentile_cont returns NULL when the input set is empty
+        p50 = row.p50_latency_ms
+        p95 = row.p95_latency_ms
         by_model.append(
             ModelMetrics(
                 model_name=row.model_name,
@@ -148,8 +145,8 @@ async def metrics_summary(
                 total_cost_usd=Decimal(str(row.total_cost_usd)),
                 avg_cost_usd=Decimal(str(row.avg_cost_usd)),
                 avg_latency_ms=float(row.avg_latency_ms),
-                p50_latency_ms=int(row.p50_latency_ms),
-                p95_latency_ms=int(row.p95_latency_ms),
+                p50_latency_ms=int(p50) if p50 is not None else 0,
+                p95_latency_ms=int(p95) if p95 is not None else 0,
                 total_tokens_in=int(row.total_tokens_in),
                 total_tokens_out=int(row.total_tokens_out),
                 avg_quality_score=avg_q,
@@ -174,9 +171,3 @@ async def metrics_summary(
         error_count=error_count,
         by_model=by_model,
     )
-
-
-def _hours_to_label(hours: int) -> str:
-    """Convert an hour count back to the canonical window label string."""
-    reverse = {v: k for k, v in _WINDOW_MAP.items()}
-    return reverse.get(hours, f"{hours}h")
