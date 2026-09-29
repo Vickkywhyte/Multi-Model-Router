@@ -102,7 +102,9 @@ async def metrics_summary(
     error_count: int = overall_row.error_count
 
     # --- Per-model aggregates with percentile_cont ---
-    # Left-join quality_scores so avg_quality_score is NULL when there's no feedback.
+    # Left-join quality_scores filtered by the same window so avg_quality_score
+    # reflects scores submitted within the window, not scores for requests within
+    # the window. A score submitted today for a week-old request is excluded.
     per_model_q = (
         select(
             Request.model_name,
@@ -120,7 +122,11 @@ async def metrics_summary(
             func.coalesce(func.sum(Request.tokens_out), 0).label("total_tokens_out"),
             func.avg(QualityScore.score).label("avg_quality_score"),
         )
-        .outerjoin(QualityScore, Request.request_id == QualityScore.request_id)
+        .outerjoin(
+            QualityScore,
+            (QualityScore.request_id == Request.request_id)
+            & (QualityScore.created_at >= since),
+        )
         .where(Request.created_at >= since)
         .group_by(Request.model_name)
         .order_by(Request.model_name)
