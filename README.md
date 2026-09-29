@@ -218,4 +218,4 @@ See [ROADMAP.md](ROADMAP.md).
 
 ## License
 
-*(placeholder — add your preferred license here)*
+MIT — see [LICENSE](LICENSE) for details.
