@@ -23,9 +23,10 @@ class Settings(BaseSettings):
     log_level: str = "INFO"
     api_v1_prefix: str = "/v1"
 
-    # Real deployments must set GEMINI_API_KEY in .env; tests mock the provider
-    # so this value is never forwarded to the Gemini API in CI.
-    gemini_api_key: str = "test-placeholder-key-not-used"
+    # Required — must be set via GEMINI_API_KEY in .env or the environment.
+    # The app raises a ValidationError at startup if this is missing, which is
+    # intentional: fail fast rather than starting and breaking on the first request.
+    gemini_api_key: str
 
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/router"
     redis_url: str = "redis://localhost:6379/0"
@@ -33,5 +34,4 @@ class Settings(BaseSettings):
 
 @lru_cache
 def get_settings() -> Settings:
-    """Return the cached application settings instance."""
     return Settings()

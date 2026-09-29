@@ -27,6 +27,8 @@ jobs:
         run: mypy app/
 
       - name: Test (pytest)
+        env:
+          GEMINI_API_KEY: ci-placeholder-not-a-real-key
         run: pytest -v --cov=app --cov-report=term-missing
 
   docker:
