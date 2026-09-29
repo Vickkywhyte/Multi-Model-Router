@@ -1,15 +1,15 @@
 """Google Gemini provider adapter using the google-genai SDK."""
 
+import logging
 from decimal import Decimal
 
 from google import genai
 from google.genai import types
 
 from app.config import get_settings
-from app.observability.logger import get_logger
 from app.providers.base import BaseProvider, CompletionRequest, CompletionResult
 
-logger = get_logger("app.providers.gemini")
+logger = logging.getLogger("app.providers.gemini")
 
 _PRICING: dict[str, tuple[Decimal, Decimal]] = {
     "gemini-3.5-flash-lite": (Decimal("0.30"), Decimal("2.50")),

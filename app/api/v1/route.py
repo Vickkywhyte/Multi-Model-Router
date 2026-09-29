@@ -1,17 +1,18 @@
 """Route endpoint — POST /v1/route classifies and routes a prompt."""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.dependencies import get_db
-from app.observability.logger import get_logger
 from app.providers.base import BaseProvider
 from app.providers.factory import get_provider
 from app.schemas.route import RouteRequest, RouteResponse
 from app.services.routing_service import route_prompt
 
 router = APIRouter(tags=["route"])
-logger = get_logger("app.api.route")
+logger = logging.getLogger("app.api.route")
 
 
 def get_provider_dep() -> BaseProvider:

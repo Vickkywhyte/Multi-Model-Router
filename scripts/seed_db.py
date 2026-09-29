@@ -8,15 +8,16 @@ Usage:
 """
 
 import asyncio
+import logging
 
 from sqlalchemy import select
 
 from app.db.session import AsyncSessionLocal
 from app.models.model import Model
-from app.observability.logger import get_logger, setup_logging
+from app.observability.logger import setup_logging
 
 setup_logging()
-logger = get_logger("scripts.seed_db")
+logger = logging.getLogger("scripts.seed_db")
 
 _MODELS = [
     {

@@ -1,5 +1,7 @@
 """POST /v1/feedback — record a quality score for a past request."""
 
+import logging
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,10 +9,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.dependencies import get_db
 from app.models.quality import QualityScore
 from app.models.request import Request
-from app.observability.logger import get_logger
 from app.schemas.feedback import FeedbackRequest, FeedbackResponse
 
-logger = get_logger("app.api.feedback")
+logger = logging.getLogger("app.api.feedback")
 
 router = APIRouter()
 

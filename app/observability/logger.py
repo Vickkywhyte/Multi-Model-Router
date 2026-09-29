@@ -1,7 +1,7 @@
 """Structured JSON logging setup using python-json-logger.
 
-Call setup_logging() once at application startup, then use get_logger()
-to obtain named loggers throughout the codebase.
+Call setup_logging() once at application startup, then obtain loggers
+with logging.getLogger(name) directly.
 """
 
 import logging
@@ -29,7 +29,3 @@ def setup_logging(log_level: str = "INFO") -> None:
     handler.setFormatter(formatter)
     root.addHandler(handler)
     root.setLevel(log_level.upper())
-
-
-def get_logger(name: str) -> logging.Logger:
-    return logging.getLogger(name)

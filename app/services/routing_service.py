@@ -1,6 +1,7 @@
 """Routing service — classify, pick model, call provider, log to DB."""
 
 import hashlib
+import logging
 from decimal import Decimal
 from time import perf_counter
 from uuid import uuid4
@@ -12,11 +13,10 @@ from app.core.classifier import classify
 from app.core.pricing import tier_to_model
 from app.models.model import Model
 from app.models.request import Request
-from app.observability.logger import get_logger
 from app.providers.base import BaseProvider, CompletionRequest
 from app.schemas.route import RouteRequest, RouteResponse
 
-logger = get_logger("app.services.routing")
+logger = logging.getLogger("app.services.routing")
 
 
 async def route_prompt(

@@ -4,6 +4,7 @@ Wires together configuration, logging, middleware, and API routers.
 The lifespan context manager handles startup and shutdown logging.
 """
 
+import logging
 from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 
@@ -12,7 +13,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.v1.router import router as v1_router
 from app.config import get_settings
-from app.observability.logger import get_logger, setup_logging
+from app.observability.logger import setup_logging
 from app.observability.tracing import RequestTracingMiddleware
 
 settings = get_settings()
@@ -22,7 +23,7 @@ settings = get_settings()
 async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
     """Manage application startup and shutdown."""
     setup_logging(settings.log_level)
-    logger = get_logger("app.main")
+    logger = logging.getLogger("app.main")
     logger.info(
         "Application starting",
         extra={"app_name": settings.app_name, "env": settings.app_env},

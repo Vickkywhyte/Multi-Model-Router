@@ -19,13 +19,15 @@ from decimal import Decimal
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 
+import logging
+
 from app.core.classifier import classify
-from app.observability.logger import get_logger, setup_logging
+from app.observability.logger import setup_logging
 from app.providers.base import CompletionRequest
 from app.providers.gemini_provider import GeminiProvider
 
 setup_logging("INFO")
-logger = get_logger("benchmark")
+logger = logging.getLogger("benchmark")
 
 _DEFAULT_PROMPT = "What is the capital of France?"
 

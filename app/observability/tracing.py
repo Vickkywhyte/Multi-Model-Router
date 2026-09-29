@@ -4,6 +4,7 @@ Logs request start and finish (including duration) as structured JSON events,
 and echoes the request ID back to the caller via the X-Request-ID header.
 """
 
+import logging
 import time
 from uuid import uuid4
 
@@ -11,9 +12,7 @@ from starlette.middleware.base import BaseHTTPMiddleware, RequestResponseEndpoin
 from starlette.requests import Request
 from starlette.responses import Response
 
-from app.observability.logger import get_logger
-
-_logger = get_logger("app.tracing")
+_logger = logging.getLogger("app.tracing")
 
 
 class RequestTracingMiddleware(BaseHTTPMiddleware):

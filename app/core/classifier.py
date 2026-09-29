@@ -1,13 +1,12 @@
 """Rule-based prompt complexity classifier. No LLM calls, no network, no DB."""
 
 import hashlib
+import logging
 from typing import Literal
 
 from pydantic import BaseModel
 
-from app.observability.logger import get_logger
-
-logger = get_logger("app.core.classifier")
+logger = logging.getLogger("app.core.classifier")
 
 _MULTI_STEP_KEYWORDS = [
     "step by step", "and then", "after that", "compare", "analyze",

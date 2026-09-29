@@ -4,6 +4,7 @@ All heavy lifting is done in SQL via SQLAlchemy 2.0 async ORM so Python never
 holds full result-sets in memory for aggregation.
 """
 
+import logging
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
 
@@ -13,10 +14,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.windows import hours_to_label
 from app.models.quality import QualityScore
 from app.models.request import Request
-from app.observability.logger import get_logger
 from app.schemas.metrics import MetricsSummary, ModelMetrics
 
-logger = get_logger("app.services.metrics")
+logger = logging.getLogger("app.services.metrics")
 
 
 async def list_requests(

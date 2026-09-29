@@ -1,15 +1,16 @@
 """Read-only endpoints for request history and metrics aggregates."""
 
+import logging
+
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.windows import WINDOW_HOURS
 from app.dependencies import get_db
-from app.observability.logger import get_logger
 from app.schemas.metrics import MetricsSummary, RequestListItem, RequestListResponse
 from app.services import metrics_service
 
-logger = get_logger("app.api.metrics")
+logger = logging.getLogger("app.api.metrics")
 
 router = APIRouter()
 
