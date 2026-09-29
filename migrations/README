@@ -1,0 +1,7 @@
+Alembic migration environment for multi-model-router.
+
+Generate a new migration:
+    make revision msg="describe your change"
+
+Apply all pending migrations:
+    make migrate

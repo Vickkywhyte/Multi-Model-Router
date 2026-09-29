@@ -1,0 +1,51 @@
+[project]
+name = "multi-model-router"
+version = "0.1.0"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi", "uvicorn[standard]", "pydantic", "pydantic-settings",
+    "sqlalchemy[asyncio]", "asyncpg", "alembic", "redis",
+    "httpx", "google-genai", "python-json-logger",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "ruff",
+    "mypy",
+    "pre-commit",
+]
+dashboard = [
+    "streamlit",
+    "plotly",
+    "pandas",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "UP", "B", "SIM"]
+
+[tool.ruff.lint.per-file-ignores]
+"migrations/**" = ["E501", "I001", "UP007", "UP035", "B008"]
+"scripts/**" = ["E501"]
+"app/models/**" = ["E501"]
+"tests/**" = ["E501"]
+"dashboard/**" = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+plugins = ["pydantic.mypy"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
+exclude = ["tests*", "migrations*", "docs*", "scripts*", "dashboard*"]
