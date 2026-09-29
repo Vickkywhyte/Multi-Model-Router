@@ -172,7 +172,7 @@ async def _persist_request(
             model_name=model_name,
             tokens_in=tokens_in,
             tokens_out=tokens_out,
-            cost_usd=float(cost_usd),
+            cost_usd=cost_usd,
             latency_ms=latency_ms,
             status=status,
             error_message=error_message,
