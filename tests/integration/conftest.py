@@ -15,7 +15,7 @@ from app.api.v1 import feedback as feedback_module
 from app.api.v1 import metrics as metrics_module
 from app.api.v1 import route as route_module
 from app.api.v1.route import get_provider_dep
-from app.dependencies import get_db
+from app.dependencies import get_db, get_redis
 from app.providers.base import CompletionResult
 
 
@@ -68,12 +68,39 @@ def mock_provider():
     return _factory
 
 
+def _make_permissive_redis() -> MagicMock:
+    """Return a Redis mock whose INCR always returns 1 (never rate-limited)."""
+    mock = MagicMock()
+    mock.incr = AsyncMock(return_value=1)
+    mock.expire = AsyncMock(return_value=True)
+    mock.aclose = AsyncMock()
+    return mock
+
+
+@pytest.fixture
+def mock_redis():
+    """Return a factory for Redis mocks with a configurable INCR sequence."""
+
+    def _factory(incr_values: list[int] | None = None) -> MagicMock:
+        mock = MagicMock()
+        if incr_values is not None:
+            mock.incr = AsyncMock(side_effect=incr_values)
+        else:
+            mock.incr = AsyncMock(return_value=1)
+        mock.expire = AsyncMock(return_value=True)
+        mock.aclose = AsyncMock()
+        return mock
+
+    return _factory
+
+
 @pytest.fixture
 def client_factory():
     @contextmanager
     def _factory(
         session: MagicMock,
         provider: MagicMock | None = None,
+        redis_client: MagicMock | None = None,
     ) -> Generator[TestClient, None, None]:
         app = FastAPI()
         app.include_router(route_module.router, prefix="/v1")
@@ -83,7 +110,13 @@ def client_factory():
         async def override_get_db() -> AsyncSession:
             yield session
 
+        _redis = redis_client if redis_client is not None else _make_permissive_redis()
+
+        async def override_get_redis() -> MagicMock:
+            yield _redis
+
         app.dependency_overrides[get_db] = override_get_db
+        app.dependency_overrides[get_redis] = override_get_redis
 
         if provider is not None:
             def override_get_provider_dep() -> MagicMock:

@@ -30,6 +30,7 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/router"
     redis_url: str = "redis://localhost:6379/0"
+    rate_limit_per_minute: int = 30
 
 
 @lru_cache
