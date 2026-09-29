@@ -29,7 +29,6 @@ class HeuristicScorer(QualityScorer):
     """
 
     async def score(self, prompt: str, response: str) -> tuple[Decimal, str]:
-        """Score response quality heuristically."""
         text = response.strip()
 
         if not text:
@@ -55,15 +54,4 @@ _SCORERS: dict[str, QualityScorer] = {"heuristic": HeuristicScorer()}
 
 
 def get_scorer(source: str) -> QualityScorer:
-    """Return the scorer registered for *source*.
-
-    Args:
-        source: One of the registered scorer keys.
-
-    Returns:
-        QualityScorer instance.
-
-    Raises:
-        KeyError: If *source* is not registered.
-    """
     return _SCORERS[source]

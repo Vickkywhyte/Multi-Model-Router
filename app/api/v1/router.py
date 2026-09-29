@@ -15,5 +15,4 @@ router.include_router(feedback_module.router)
 
 @router.get("/ping")
 async def ping() -> dict[str, str]:
-    """Health-check ping endpoint."""
     return {"message": "pong"}

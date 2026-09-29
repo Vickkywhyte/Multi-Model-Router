@@ -67,8 +67,4 @@ class BaseProvider(ABC):
 
     @abstractmethod
     def supports(self, model_name: str) -> bool:
-        """Return True if this provider can handle the given model.
-
-        Args:
-            model_name: The model identifier to check.
-        """
+        ...

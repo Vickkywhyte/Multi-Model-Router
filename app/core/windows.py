@@ -11,7 +11,6 @@ WINDOW_HOURS: Final[dict[str, int]] = {
 
 
 def hours_to_label(hours: int) -> str:
-    """Return the canonical window label for an hour count."""
     for label, h in WINDOW_HOURS.items():
         if h == hours:
             return label

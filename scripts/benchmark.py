@@ -41,7 +41,6 @@ async def _run_one(
     model_name: str,
     prompt: str,
 ) -> dict[str, object]:
-    """Run a single model completion and return timing + cost data."""
     request = CompletionRequest(prompt=prompt, model_name=model_name)
     start = time.monotonic()
     try:
@@ -75,7 +74,6 @@ async def _run_one(
 
 
 async def run_benchmark(prompt: str) -> None:
-    """Run prompt against all models and print a markdown comparison table."""
     classification = classify(prompt)
     print(f"\n**Prompt:** {prompt!r}")
     print(f"**Classifier decision:** {classification.label} ({classification.reason})\n")

@@ -98,16 +98,6 @@ def classify(prompt: str) -> ClassificationResult:
 
 
 def _build_reason(word_count: int, scores: dict[str, int], total: int) -> str:
-    """Build a human-readable explanation of the classification signals.
-
-    Args:
-        word_count: Number of words in the prompt.
-        scores: Per-signal score breakdown.
-        total: Combined score.
-
-    Returns:
-        Descriptive string naming the top contributing signals.
-    """
     if word_count == 0:
         return "Empty prompt"
 

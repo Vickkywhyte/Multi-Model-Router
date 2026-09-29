@@ -9,27 +9,10 @@ _REGISTRY: dict[str, type[BaseProvider]] = {
 
 
 def register_provider(name: str, cls: type[BaseProvider]) -> None:
-    """Register a new provider class under the given name.
-
-    Args:
-        name: Short identifier (e.g. "openai").
-        cls: A concrete BaseProvider subclass.
-    """
     _REGISTRY[name] = cls
 
 
 def get_provider(provider_name: str = "google") -> BaseProvider:
-    """Return an instantiated provider for the given name.
-
-    Args:
-        provider_name: Key in the registry (default "google").
-
-    Returns:
-        A ready-to-use BaseProvider instance.
-
-    Raises:
-        ValueError: If provider_name is not registered.
-    """
     if provider_name not in _REGISTRY:
         raise ValueError(
             f"Unknown provider '{provider_name}'. "

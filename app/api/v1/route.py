@@ -15,7 +15,6 @@ logger = get_logger("app.api.route")
 
 
 def get_provider_dep() -> BaseProvider:
-    """Return the default Google provider instance."""
     return get_provider("google")
 
 

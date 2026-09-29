@@ -44,7 +44,6 @@ _MODELS = [
 
 
 async def seed() -> None:
-    """Insert Gemini model rows, skipping any that already exist."""
     inserted = 0
     skipped = 0
 

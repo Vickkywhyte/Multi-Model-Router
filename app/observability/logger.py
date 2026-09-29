@@ -32,12 +32,4 @@ def setup_logging(log_level: str = "INFO") -> None:
 
 
 def get_logger(name: str) -> logging.Logger:
-    """Return a named logger.
-
-    Args:
-        name: Dotted logger name, e.g. "app.main".
-
-    Returns:
-        A standard library Logger instance.
-    """
     return logging.getLogger(name)

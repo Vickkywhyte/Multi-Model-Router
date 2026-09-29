@@ -22,15 +22,6 @@ class RequestTracingMiddleware(BaseHTTPMiddleware):
     async def dispatch(
         self, request: Request, call_next: RequestResponseEndpoint
     ) -> Response:
-        """Process the request, logging timing and attaching the request ID.
-
-        Args:
-            request: The incoming HTTP request.
-            call_next: The next middleware or route handler.
-
-        Returns:
-            The HTTP response with X-Request-ID header added.
-        """
         request_id = str(uuid4())
         start = time.perf_counter()
 

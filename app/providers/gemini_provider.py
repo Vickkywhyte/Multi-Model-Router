@@ -78,16 +78,6 @@ class GeminiProvider(BaseProvider):
     def calculate_cost(
         self, model_name: str, tokens_in: int, tokens_out: int
     ) -> Decimal:
-        """Return USD cost for the given token counts.
-
-        Args:
-            model_name: Gemini model identifier.
-            tokens_in: Prompt token count.
-            tokens_out: Completion token count.
-
-        Returns:
-            Total cost in USD as a Decimal.
-        """
         if model_name not in _PRICING:
             raise ValueError(f"Unknown model for cost calculation: '{model_name}'")
         price_in, price_out = _PRICING[model_name]
@@ -97,9 +87,4 @@ class GeminiProvider(BaseProvider):
         )
 
     def supports(self, model_name: str) -> bool:
-        """Return True if model_name is a known Gemini model.
-
-        Args:
-            model_name: The model identifier to check.
-        """
         return model_name in _PRICING
