@@ -1,4 +1,9 @@
-"""Read-only endpoints for request history and metrics aggregates."""
+"""Read-only endpoints for request history and metrics aggregates.
+
+Authentication is intentionally omitted here. These endpoints are read-only
+and expose no sensitive write operations. Leaving them open allows monitoring
+dashboards and on-call tooling to query metrics without managing API keys.
+"""
 
 import logging
 

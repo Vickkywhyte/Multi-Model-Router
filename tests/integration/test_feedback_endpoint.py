@@ -6,8 +6,10 @@ from decimal import Decimal
 from unittest.mock import AsyncMock, MagicMock
 
 from app.models.request import Request
+from tests.conftest import _TEST_API_KEY
 
 _VALID_REQUEST_ID = "a1b2c3d4-e5f6-4890-abcd-ef1234567890"
+_AUTH = {"X-API-Key": _TEST_API_KEY}
 
 
 def _make_mock_request_row(request_id: str = _VALID_REQUEST_ID) -> Request:
@@ -67,6 +69,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "4.50", "source": "human"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 201
@@ -84,6 +87,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "5.01"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 422
@@ -95,6 +99,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "-0.01"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 422
@@ -106,6 +111,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": "00000000-0000-0000-0000-000000000000", "score": "3.00"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 404
@@ -115,7 +121,7 @@ class TestFeedbackEndpoint:
         """Missing request_id field → 422 Unprocessable Entity."""
         session = _make_found_session()
         with client_factory(session) as client:
-            resp = client.post("/v1/feedback", json={"score": "3.00"})
+            resp = client.post("/v1/feedback", json={"score": "3.00"}, headers=_AUTH)
 
         assert resp.status_code == 422
 
@@ -126,6 +132,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "3.00", "source": "human"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 201
@@ -138,6 +145,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "3.00", "source": "robot"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 422
@@ -149,6 +157,7 @@ class TestFeedbackEndpoint:
             resp = client.post(
                 "/v1/feedback",
                 json={"request_id": _VALID_REQUEST_ID, "score": "2.00"},
+                headers=_AUTH,
             )
 
         assert resp.status_code == 201
