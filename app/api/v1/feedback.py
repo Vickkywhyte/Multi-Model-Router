@@ -10,6 +10,7 @@ from app.dependencies import get_db
 from app.models.quality import QualityScore
 from app.models.request import Request
 from app.schemas.feedback import FeedbackRequest, FeedbackResponse
+from app.security import require_api_key
 
 logger = logging.getLogger("app.api.feedback")
 
@@ -19,6 +20,7 @@ router = APIRouter()
 @router.post("/feedback", response_model=FeedbackResponse, status_code=201)
 async def submit_feedback(
     body: FeedbackRequest,
+    _: None = Depends(require_api_key),  # noqa: B008
     session: AsyncSession = Depends(get_db),  # noqa: B008
 ) -> FeedbackResponse:
     """Record a quality score for a previously logged request.

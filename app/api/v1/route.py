@@ -12,6 +12,7 @@ from app.dependencies import get_db, get_redis
 from app.providers.base import BaseProvider
 from app.providers.factory import get_provider
 from app.schemas.route import RouteRequest, RouteResponse
+from app.security import require_api_key
 from app.services.routing_service import route_prompt
 
 router = APIRouter(tags=["route"])
@@ -27,6 +28,7 @@ async def route(
     payload: RouteRequest,
     request: Request,
     response: Response,
+    _auth: None = Depends(require_api_key),  # noqa: B008
     session: AsyncSession = Depends(get_db),  # noqa: B008
     provider: BaseProvider = Depends(get_provider_dep),  # noqa: B008
     redis_client: aioredis.Redis = Depends(get_redis),  # noqa: B008

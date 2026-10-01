@@ -28,6 +28,10 @@ class Settings(BaseSettings):
     # intentional: fail fast rather than starting and breaking on the first request.
     gemini_api_key: str
 
+    # Required — shared API key for authenticating write endpoints.
+    # Generate with: python -c "import secrets; print(secrets.token_hex(32))"
+    api_key: str
+
     database_url: str = "postgresql+asyncpg://postgres:postgres@localhost:5432/router"
     redis_url: str = "redis://localhost:6379/0"
     rate_limit_per_minute: int = 30
