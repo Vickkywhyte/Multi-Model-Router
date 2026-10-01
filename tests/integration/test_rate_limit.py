@@ -2,10 +2,13 @@
 
 import pytest
 
+from tests.conftest import _TEST_API_KEY
+
 # The rate-limit setting used in tests — must match what app/config.py sets
 # via RATE_LIMIT_PER_MINUTE (default 30). We override to a small value so
 # tests don't have to make 30+ requests.
 _TEST_LIMIT = 3
+_AUTH = {"X-API-Key": _TEST_API_KEY}
 
 
 @pytest.fixture(autouse=True)
@@ -31,7 +34,7 @@ class TestRateLimit:
 
         with client_factory(session, provider, redis_client=redis) as client:
             for _ in range(_TEST_LIMIT):
-                resp = client.post("/v1/route", json={"prompt": "hi"})
+                resp = client.post("/v1/route", json={"prompt": "hi"}, headers=_AUTH)
                 assert resp.status_code == 200
 
     def test_request_over_limit_returns_429(
@@ -44,7 +47,7 @@ class TestRateLimit:
         provider = mock_provider()
 
         with client_factory(session, provider, redis_client=redis) as client:
-            resp = client.post("/v1/route", json={"prompt": "hi"})
+            resp = client.post("/v1/route", json={"prompt": "hi"}, headers=_AUTH)
 
         assert resp.status_code == 429
         assert "Retry-After" in resp.headers
@@ -69,8 +72,8 @@ class TestRateLimit:
 
         with client_factory(session, provider, redis_client=redis) as client:
             # Two requests from the same TestClient IP — both at count=1 (allowed)
-            resp1 = client.post("/v1/route", json={"prompt": "hi"})
-            resp2 = client.post("/v1/route", json={"prompt": "hi"})
+            resp1 = client.post("/v1/route", json={"prompt": "hi"}, headers=_AUTH)
+            resp2 = client.post("/v1/route", json={"prompt": "hi"}, headers=_AUTH)
 
         assert resp1.status_code == 200
         assert resp2.status_code == 200
@@ -92,6 +95,6 @@ class TestRateLimit:
         provider = mock_provider()
 
         with client_factory(session, provider, redis_client=redis) as client:
-            resp = client.post("/v1/route", json={"prompt": "hi"})
+            resp = client.post("/v1/route", json={"prompt": "hi"}, headers=_AUTH)
 
         assert resp.status_code == 200
