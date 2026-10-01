@@ -139,3 +139,27 @@ def test_determinism() -> None:
     assert r1.label == r2.label
     assert r1.reason == r2.reason
     assert r1.scores == r2.scores
+
+
+# ---------------------------------------------------------------------------
+# Threshold calibration tests
+# ---------------------------------------------------------------------------
+
+def test_short_hello_is_simple() -> None:
+    result = classify("Hello")
+    assert result.label == "simple", f"Scores: {result.scores}"
+
+
+def test_compare_keyword_is_medium() -> None:
+    result = classify("Compare Python and Rust for building a web backend")
+    assert result.label == "medium", f"Scores: {result.scores}"
+
+
+def test_long_multi_signal_prompt_is_complex() -> None:
+    prompt = (
+        "Step by step, design a distributed event-driven architecture with retries "
+        "and idempotency. Compare message queues vs event streams. Analyze failure "
+        "modes. Provide code examples in Python and Go."
+    )
+    result = classify(prompt)
+    assert result.label == "complex", f"Scores: {result.scores}"

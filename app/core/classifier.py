@@ -66,7 +66,7 @@ def classify(prompt: str) -> ClassificationResult:
 
     # Multi-step keywords (capped at 4)
     multi_hits = sum(1 for kw in _MULTI_STEP_KEYWORDS if kw in prompt_lower)
-    scores["multi_step_keywords"] = min(multi_hits, 4)
+    scores["multi_step_keywords"] = min(multi_hits, 4) * 2
 
     # Simple-task keywords (floored at -2)
     simple_hits = sum(1 for kw in _SIMPLE_KEYWORDS if kw in prompt_lower)
@@ -78,9 +78,9 @@ def classify(prompt: str) -> ClassificationResult:
 
     total = sum(scores.values())
 
-    if total <= 1:
+    if total <= 0:
         label: Literal["simple", "medium", "complex"] = "simple"
-    elif total <= 5:
+    elif total <= 3:
         label = "medium"
     else:
         label = "complex"
