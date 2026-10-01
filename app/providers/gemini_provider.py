@@ -14,7 +14,7 @@ logger = logging.getLogger("app.providers.gemini")
 _PRICING: dict[str, tuple[Decimal, Decimal]] = {
     "gemini-3.5-flash-lite": (Decimal("0.30"), Decimal("2.50")),
     "gemini-3.5-flash":      (Decimal("1.50"), Decimal("9.00")),
-    "gemini-2.5-pro":        (Decimal("1.25"), Decimal("10.00")),
+    # Add a Pro model here (with its published prices) once billing is enabled.
 }
 
 

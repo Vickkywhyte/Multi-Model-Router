@@ -20,7 +20,6 @@ def test_supports_known_models() -> None:
     provider = GeminiProvider()
     assert provider.supports("gemini-3.5-flash-lite") is True
     assert provider.supports("gemini-3.5-flash") is True
-    assert provider.supports("gemini-2.5-pro") is True
 
 
 def test_supports_unknown_model_returns_false() -> None:
@@ -48,13 +47,6 @@ def test_calculate_cost_flash_lite() -> None:
     cost = provider.calculate_cost("gemini-3.5-flash-lite", 2000, 1000)
     assert cost == Decimal("0.003100")
 
-
-def test_calculate_cost_pro() -> None:
-    provider = GeminiProvider()
-    # 500 input @ 1.25/1M + 200 output @ 10.00/1M
-    # = 0.000625 + 0.002000 = 0.002625
-    cost = provider.calculate_cost("gemini-2.5-pro", 500, 200)
-    assert cost == Decimal("0.002625")
 
 
 def test_calculate_cost_unknown_model_raises() -> None:

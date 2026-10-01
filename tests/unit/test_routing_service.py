@@ -79,7 +79,7 @@ async def test_simple_prompt_routes_to_flash_lite() -> None:
 
 @pytest.mark.asyncio
 async def test_complex_prompt_routes_to_pro() -> None:
-    """A long, multi-step prompt with code fences should map to gemini-2.5-pro."""
+    """A long, multi-step prompt with code fences should map to gemini-3.5-flash."""
     complex_prompt = (
         "Step by step, design and architect a distributed microservices system. "
         "Compare the tradeoffs, analyze the failure modes, and evaluate each component.\n"
@@ -89,14 +89,14 @@ async def test_complex_prompt_routes_to_pro() -> None:
         "After that, prove the correctness of the algorithm with a formal proof. "
         "Also, provide an in depth analysis of the results."
     )
-    provider = _make_provider(model_name="gemini-2.5-pro")
+    provider = _make_provider(model_name="gemini-3.5-flash")
     session = _make_session(model_id=uuid.uuid4())
     req = RouteRequest(prompt=complex_prompt)
 
     await route_prompt(req, session, provider)
 
     call_kwargs = provider.complete.call_args[0][0]
-    assert call_kwargs.model_name == "gemini-2.5-pro"
+    assert call_kwargs.model_name == "gemini-3.5-flash"
 
 
 @pytest.mark.asyncio

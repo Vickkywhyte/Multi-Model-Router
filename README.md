@@ -11,7 +11,7 @@ An AI gateway that classifies prompt complexity and routes each request to the c
 
 ## Why this exists
 
-LLM API costs vary enormously across model tiers. A simple "What is the capital of France?" costs ~50× less on Gemini Flash Lite than on Gemini 2.5 Pro — yet both give the same correct answer. This router inspects each prompt, assigns a complexity label (simple / medium / complex), and picks the cheapest model that can handle it. Every request is logged with token counts, latency, and cost so you can measure the tradeoff over time.
+LLM API costs vary enormously across model tiers. A simple "What is the capital of France?" costs 5× less on Gemini Flash Lite than on Gemini Flash — yet both give the same correct answer. This router inspects each prompt, assigns a complexity label (simple / medium / complex), and routes simple prompts to the cheapest tier while everything else goes to a capable mid-tier model. Every request is logged with token counts, latency, and cost so you can measure the tradeoff over time.
 
 ---
 

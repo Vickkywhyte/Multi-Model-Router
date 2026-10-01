@@ -4,6 +4,10 @@
 # No tracing middleware is added, so X-Request-ID header is set only by the
 # route handler — which is what test_response_header_matches_body_request_id checks.
 
+from tests.conftest import _TEST_API_KEY
+
+_AUTH = {"X-API-Key": _TEST_API_KEY}
+
 
 class TestRouteEndpoint:
     def test_short_prompt_returns_200_with_full_response(
@@ -13,7 +17,7 @@ class TestRouteEndpoint:
         session = mock_session()
         provider = mock_provider()
         with client_factory(session, provider) as client:
-            resp = client.post("/v1/route", json={"prompt": "Hi"})
+            resp = client.post("/v1/route", json={"prompt": "Hi"}, headers=_AUTH)
 
         assert resp.status_code == 200
         body = resp.json()
@@ -34,7 +38,7 @@ class TestRouteEndpoint:
         session = mock_session()
         provider = mock_provider()
         with client_factory(session, provider) as client:
-            resp = client.post("/v1/route", json={"prompt": "Hi"})
+            resp = client.post("/v1/route", json={"prompt": "Hi"}, headers=_AUTH)
 
         assert resp.status_code == 200
         body = resp.json()
@@ -45,7 +49,7 @@ class TestRouteEndpoint:
         session = mock_session()
         provider = mock_provider()
         with client_factory(session, provider) as client:
-            resp = client.post("/v1/route", json={"prompt": ""})
+            resp = client.post("/v1/route", json={"prompt": ""}, headers=_AUTH)
 
         assert resp.status_code == 200
 
@@ -56,7 +60,7 @@ class TestRouteEndpoint:
         session = mock_session()
         provider = mock_provider(raise_exc=ValueError("bad input"))
         with client_factory(session, provider) as client:
-            resp = client.post("/v1/route", json={"prompt": "hello"})
+            resp = client.post("/v1/route", json={"prompt": "hello"}, headers=_AUTH)
 
         assert resp.status_code == 400
         assert "bad input" in resp.json()["detail"]
@@ -68,7 +72,7 @@ class TestRouteEndpoint:
         session = mock_session()
         provider = mock_provider(raise_exc=RuntimeError("crash"))
         with client_factory(session, provider) as client:
-            resp = client.post("/v1/route", json={"prompt": "hello"})
+            resp = client.post("/v1/route", json={"prompt": "hello"}, headers=_AUTH)
 
         assert resp.status_code == 500
         assert resp.json()["detail"] == "internal error"
@@ -80,6 +84,6 @@ class TestRouteEndpoint:
         session = mock_session()
         provider = mock_provider()
         with client_factory(session, provider) as client:
-            resp = client.post("/v1/route", json={"max_tokens": 512})
+            resp = client.post("/v1/route", json={"max_tokens": 512}, headers=_AUTH)
 
         assert resp.status_code == 422

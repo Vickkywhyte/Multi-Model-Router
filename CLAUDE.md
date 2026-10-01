@@ -75,8 +75,12 @@ If any task seems to require changing these, STOP and ask. Do not edit silently.
 Initial provider is **Google Gemini** (free tier), NOT Anthropic.
 - Simple → gemini-3.5-flash-lite
 - Medium → gemini-3.5-flash
-- Complex → gemini-2.5-pro
+- Complex → gemini-3.5-flash  (same as medium — no Pro on free tier)
 - API key env var: GEMINI_API_KEY
 - SDK: google-genai
 - No paid tiers required. Design provider abstraction so Anthropic/OpenAI
   can be added later without touching business logic.
+
+Complex prompts currently share the medium-tier model because Google's free
+tier does not include Pro models. Adding a Pro model is a one-line change in
+app/core/pricing.py once billing is enabled.

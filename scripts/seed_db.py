@@ -34,13 +34,6 @@ _MODELS = [
         "output_price_per_million": 9.00,
         "context_window": 1_000_000,
     },
-    {
-        "name": "gemini-2.5-pro",
-        "provider": "google",
-        "input_price_per_million": 1.25,
-        "output_price_per_million": 10.00,
-        "context_window": 2_000_000,
-    },
 ]
 
 

@@ -51,7 +51,7 @@ Step 6 — Respond: The answer is returned to the user along with metadata showi
 4. The Three AI Models
 
 
-The router uses three tiers of Google Gemini models. Each tier trades off cost against capability:
+The router uses two cost tiers of Google Gemini models. Each tier trades off cost against capability:
 Tier
 Model Name
 Best For
@@ -60,17 +60,15 @@ Simple
 Gemini 3.5 Flash Lite
 Quick facts, definitions, short translations
 Cheapest (≈$0.30 per million input tokens)
-Medium
+Medium / Complex
 Gemini 3.5 Flash
-Summaries, moderate reasoning, conversational AI
+Summaries, reasoning, code generation, multi-step analysis
 Mid-range (≈$1.50 per million input tokens)
-Complex
-Gemini 2.5 Pro
-Code generation, multi-step analysis, nuanced reasoning
-Most capable (≈$1.25 input / $10.00 output per million tokens)
 
 
-By routing simple questions to Flash Lite instead of the Pro model, the system can reduce costs by 50% or more on average, while keeping answer quality high for the questions that genuinely need the bigger model.
+Note: The classifier still labels prompts as simple, medium, or complex. Currently the medium and complex tiers share the same model because Google's free tier does not include Pro quota. Adding a Pro model is a one-line change in app/core/pricing.py once billing is enabled.
+
+By routing simple questions to Flash Lite instead of Flash, the system can reduce costs by up to 80% on simple prompts, while keeping answer quality high for questions that need the more capable model.
 5. The Complexity Classifier
 
 
