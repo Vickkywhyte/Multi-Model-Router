@@ -216,6 +216,16 @@ See [ROADMAP.md](ROADMAP.md).
 
 ---
 
+## How this was built
+
+I designed this system and built it with AI assistance. I want that to be clear to anyone reviewing the code.
+
+**My part.** I defined the problem from my work in financial crime compliance, set the scope and constraints, and wrote the design documents in [`PRD.md`](PRD.md), [`ROADMAP.md`](ROADMAP.md) and [`docs/`](docs/). I drafted each document in conversation with Claude and made the final calls: the product requirements, the architecture and the security audit. The decisions that shape this repository are mine, including using a rule-based complexity classifier, routing each prompt to the cheapest capable model tier, and logging cost, latency and human quality feedback for every request. I reviewed every build phase against its checkpoint before moving on.
+
+**Claude Code's part.** Claude Code wrote the implementation phase by phase from those specs, following the rules in `CLAUDE.md`. Tests and CI check that the code meets the specs.
+
+**Why the specs stay in the repo.** They are the design record. A reviewer can read what the system was required to do and then check the code against it.
+
 ## License
 
 MIT — see [LICENSE](LICENSE) for details.
